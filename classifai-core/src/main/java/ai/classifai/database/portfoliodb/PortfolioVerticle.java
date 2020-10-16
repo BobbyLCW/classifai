@@ -8,7 +8,7 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
+ * License for the specific language governing permissions and itations
  * under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -35,7 +35,6 @@ import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ import java.util.stream.Collectors;
  * Portfolio is a collection of projects
  * Each projects contains respective UUIDs
  *
- * @author Chiawei Lim
+ * @author codenamewei
  */
 @Slf4j
 public class PortfolioVerticle extends AbstractVerticle implements PortfolioServiceable

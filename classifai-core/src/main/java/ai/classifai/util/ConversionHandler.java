@@ -8,7 +8,7 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
+ * License for the specific language governing permissions and itations
  * under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -117,9 +117,9 @@ public class ConversionHandler
 
         if(content.isEmpty()) return new ArrayList<>();
 
-        String delimiter = content.contains(", ") ? ", " :",";
+        String deiter = content.contains(", ") ? ", " :",";
 
-        return Arrays.asList(content.split(delimiter));
+        return Arrays.asList(content.split(deiter));
     }
 
     public static String preprocessStringToArray(String input)
@@ -163,9 +163,9 @@ public class ConversionHandler
                 return new ArrayList<>(Arrays.asList(Integer.parseInt(content)));
             }
 
-            String delimiter = content.contains(", ") ? ", " :",";
+            String deiter = content.contains(", ") ? ", " :",";
 
-            List<String> subString = Arrays.asList(content.split(delimiter));
+            List<String> subString = Arrays.asList(content.split(deiter));
 
             List<Integer> arrayList = subString.stream()
                     .map(Integer::parseInt)
