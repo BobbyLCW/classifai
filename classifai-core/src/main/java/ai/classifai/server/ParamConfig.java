@@ -79,6 +79,10 @@ public class ParamConfig
     private final static String CONTENT = "content";
     private final static String PROGRESS_METADATA = "progress";
 
+    private final static String STARRED = "starred";
+    private final static String IS_LOADED = "is_loaded";
+    private final static String CREATED_DATE = "created_date";
+
     public static File getFileSysRootSearchPath() { return ROOT_SEARCH_PATH; }
     public static String getLogFilePath() { return LOG_FILE_PATH; }
 
@@ -124,6 +128,12 @@ public class ParamConfig
     public static String getActionKeyword() { return ACTION_KEYWORD; }
     public static String getContent() { return CONTENT; }
     public static String getProgressMetadata() { return PROGRESS_METADATA; }
+
+
+    public static String getStarredParam() { return STARRED; }
+    public static String getIsLoadedParam() { return IS_LOADED; }
+    public static String getCreatedDateParam() { return CREATED_DATE; }
+
 
 
 }
