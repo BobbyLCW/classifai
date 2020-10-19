@@ -263,32 +263,30 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         .getResults()
                         .stream()
                         .map(json -> json.getString(0))
-                        .sorted()
                         .collect(Collectors.toList());
 
                 List<Integer> starredList = resultSet
                         .getResults()
                         .stream()
                         .map(json -> json.getInteger(1))
-                        .sorted()
                         .collect(Collectors.toList());
 
                 List<Integer> isLoadedList = resultSet
                         .getResults()
                         .stream()
                         .map(json -> json.getInteger(2))
-                        .sorted()
                         .collect(Collectors.toList());
 
                 List<String> dateTimeList = resultSet
                         .getResults()
                         .stream()
                         .map(json -> json.getString(3))
-                        .sorted()
                         .collect(Collectors.toList());
 
                 List<JsonObject> result = new ArrayList<>();
-                for(int i = 0 ; i < projectNameList.size(); ++i)
+
+                int maxIndex = projectNameList.size() - 1;
+                for(int i = maxIndex ; i > -1; --i)
                 {
                     result.add(new JsonObject()
                             .put(ParamConfig.getProjectNameParam(), projectNameList.get(i))
