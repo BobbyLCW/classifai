@@ -80,7 +80,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.updateLabelList(message);
         }
-        else if(action.equals(PortfolioDbQuery.getProjectUUIDListt()))
+        else if(action.equals(PortfolioDbQuery.getProjectUUIDList()))
         {
             this.getProjectUUIDList(message);
         }
@@ -117,7 +117,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             log.info("Create project with name: " + projectName + " for " + annotationName + " project.");
 
             Integer projectID = ProjectHandler.generateProjectID();
-
 
             JsonArray params = new JsonArray().add(projectID).add(projectName).add(annotationType).add(ParamConfig.getEmptyArray()).add(0).add(ParamConfig.getEmptyArray()).add(1).add(0).add(0).add(DateTime.get());
 
@@ -186,7 +185,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         JsonArray params = new JsonArray().add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDListt(), params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDList(), params, fetch -> {
 
             if(fetch.succeeded()) {
                 try {
@@ -265,28 +264,34 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         .map(json -> json.getString(0))
                         .collect(Collectors.toList());
 
-                List<Integer> isNewList = resultSet
+                List<String> uuidList = resultSet
                         .getResults()
                         .stream()
-                        .map(json -> json.getInteger(1))
+                        .map(json -> json.getString(1))
                         .collect(Collectors.toList());
 
-                List<Integer> isStarredList = resultSet
+                List<Integer> isNewList = resultSet
                         .getResults()
                         .stream()
                         .map(json -> json.getInteger(2))
                         .collect(Collectors.toList());
 
-                List<Integer> isLoadedList = resultSet
+                List<Integer> isStarredList = resultSet
                         .getResults()
                         .stream()
                         .map(json -> json.getInteger(3))
                         .collect(Collectors.toList());
 
+                List<Integer> isLoadedList = resultSet
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getInteger(4))
+                        .collect(Collectors.toList());
+
                 List<String> dateTimeList = resultSet
                         .getResults()
                         .stream()
-                        .map(json -> json.getString(4))
+                        .map(json -> json.getString(5))
                         .collect(Collectors.toList());
 
                 List<JsonObject> result = new ArrayList<>();
@@ -294,12 +299,15 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 int maxIndex = projectNameList.size() - 1;
                 for(int i = maxIndex ; i > -1; --i)
                 {
+                    int total_uuid = ConversionHandler.string2IntegerList(uuidList.get(i)).size();
+
                     result.add(new JsonObject()
                             .put(ParamConfig.getProjectNameParam(), projectNameList.get(i))
                             .put(ParamConfig.getIsNewParam(), isNewList.get(i))
                             .put(ParamConfig.getIsStarredParam(), isStarredList.get(i))
                             .put(ParamConfig.getIsLoadedParam(), isLoadedList.get(i))
-                            .put(ParamConfig.getCreatedDateParam(), dateTimeList.get(i)));
+                            .put(ParamConfig.getCreatedDateParam(), dateTimeList.get(i))
+                            .put(ParamConfig.getTotalUUIDParam(), total_uuid));
                 }
 
                 JsonObject response = ReplyHandler.getOkReply();

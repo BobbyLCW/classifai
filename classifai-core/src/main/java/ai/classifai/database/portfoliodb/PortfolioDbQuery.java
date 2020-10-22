@@ -44,7 +44,7 @@ public class PortfolioDbQuery
 
     //private final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
 
-    private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name, is_new, is_starred, is_loaded, created_date from Portfolio where annotation_type = ?";
+    private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name, uuid_list, is_new, is_starred, is_loaded, created_date from Portfolio where annotation_type = ?";
 
     public static String getQueue(){ return QUEUE; }
 
@@ -64,7 +64,7 @@ public class PortfolioDbQuery
 
     public static String getProjectIDList() { return GET_PROJECT_ID_LIST; }
 
-    public static String getProjectUUIDListt() { return GET_PROJECT_UUID_LIST; }
+    public static String getProjectUUIDList() { return GET_PROJECT_UUID_LIST; }
 
     public static String getAllProjectsForAnnotationType() { return GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE; }
 

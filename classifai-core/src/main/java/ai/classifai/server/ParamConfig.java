@@ -44,6 +44,7 @@ public class ParamConfig
     private final static String UUID_GENERATOR_PARAM = "uuid_generator_seed";
     private final static String ANNOTATE_TYPE_PARAM = "annotation_type";
 
+    private final static String TOTAL_UUID_PARAM = "total_uuid";
     private final static String UUID_LIST_PARAM = "uuid_list";
     private final static String LABEL_LIST_PARAM = "label_list";
 
@@ -94,6 +95,7 @@ public class ParamConfig
     public static String getUuidGeneratorParam() { return UUID_GENERATOR_PARAM; }
     public static String getAnnotateTypeParam() { return ANNOTATE_TYPE_PARAM; }
 
+    public static String getTotalUUIDParam() { return TOTAL_UUID_PARAM; }
     public static String getUUIDListParam() { return UUID_LIST_PARAM; }
     public static String getLabelListParam() { return LABEL_LIST_PARAM;}
 

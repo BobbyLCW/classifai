@@ -236,7 +236,7 @@ public class ServerVerticle extends AbstractVerticle
                     if (ReplyHandler.isReplyOk(labelResponse))
                     {
                         //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
-                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectUUIDListt());
+                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectUUIDList());
 
                         vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
                         {
