@@ -79,7 +79,7 @@ public class ParamConfig
     private final static String CONTENT = "content";
     private final static String PROGRESS_METADATA = "progress";
 
-    private final static String STARRED = "starred";
+    private final static String STARRED = "is_starred";
     private final static String IS_LOADED = "is_loaded";
     private final static String CREATED_DATE = "created_date";
 
