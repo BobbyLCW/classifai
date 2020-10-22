@@ -119,7 +119,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             Integer projectID = ProjectHandler.generateProjectID();
 
 
-            JsonArray params = new JsonArray().add(projectID).add(projectName).add(annotationType).add(ParamConfig.getEmptyArray()).add(0).add(ParamConfig.getEmptyArray()).add(0).add(0).add(DateTime.get());
+            JsonArray params = new JsonArray().add(projectID).add(projectName).add(annotationType).add(ParamConfig.getEmptyArray()).add(0).add(ParamConfig.getEmptyArray()).add(1).add(0).add(0).add(DateTime.get());
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
 
@@ -265,22 +265,28 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         .map(json -> json.getString(0))
                         .collect(Collectors.toList());
 
-                List<Integer> starredList = resultSet
+                List<Integer> isNewList = resultSet
                         .getResults()
                         .stream()
                         .map(json -> json.getInteger(1))
                         .collect(Collectors.toList());
 
-                List<Integer> isLoadedList = resultSet
+                List<Integer> isStarredList = resultSet
                         .getResults()
                         .stream()
                         .map(json -> json.getInteger(2))
                         .collect(Collectors.toList());
 
+                List<Integer> isLoadedList = resultSet
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getInteger(3))
+                        .collect(Collectors.toList());
+
                 List<String> dateTimeList = resultSet
                         .getResults()
                         .stream()
-                        .map(json -> json.getString(3))
+                        .map(json -> json.getString(4))
                         .collect(Collectors.toList());
 
                 List<JsonObject> result = new ArrayList<>();
@@ -290,7 +296,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 {
                     result.add(new JsonObject()
                             .put(ParamConfig.getProjectNameParam(), projectNameList.get(i))
-                            .put(ParamConfig.getStarredParam(), starredList.get(i))
+                            .put(ParamConfig.getIsNewParam(), isNewList.get(i))
+                            .put(ParamConfig.getIsStarredParam(), isStarredList.get(i))
                             .put(ParamConfig.getIsLoadedParam(), isLoadedList.get(i))
                             .put(ParamConfig.getCreatedDateParam(), dateTimeList.get(i)));
                 }
@@ -305,38 +312,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             }
         });
     }
-
-    /*
-    public void getAllProjectsForAnnotationType(Message<JsonObject> message)
-    {
-        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
-
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsForAnnotationType(), new JsonArray().add(annotationTypeIndex), fetch -> {
-            if (fetch.succeeded()) {
-
-                 List<String> projectNameList = fetch.result()
-                        .getResults()
-                        .stream()
-                        .map(json -> json.getString(0))
-                        .sorted()
-                        .collect(Collectors.toList());
-
-                 for(String item : projectNameList)
-                 {
-                     System.out.println("Debugging: " + item);
-                 }
-
-                JsonObject response = ReplyHandler.getOkReply();
-                response.put(ParamConfig.getContent(), projectNameList);
-
-                message.reply(response);
-            }
-            else {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
-    }
-     */
 
     public static void updateFileSystemUUIDList(@NonNull Integer projectID)
     {

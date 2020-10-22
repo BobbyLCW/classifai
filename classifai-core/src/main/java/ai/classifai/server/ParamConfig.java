@@ -79,7 +79,8 @@ public class ParamConfig
     private final static String CONTENT = "content";
     private final static String PROGRESS_METADATA = "progress";
 
-    private final static String STARRED = "is_starred";
+    private final static String IS_NEW = "is_new";
+    private final static String IS_STARRED = "is_starred";
     private final static String IS_LOADED = "is_loaded";
     private final static String CREATED_DATE = "created_date";
 
@@ -121,7 +122,6 @@ public class ParamConfig
     public static String getBase64Param() { return BASE64_PARAM; }
     public static String getFileSizeParam() { return FILE_SIZE_PARAM; }
 
-
     public static String getFileParam(){ return FILE_PARAM; }
     public static String getFolderParam(){ return FOLDER_PARAM; }
 
@@ -129,11 +129,11 @@ public class ParamConfig
     public static String getContent() { return CONTENT; }
     public static String getProgressMetadata() { return PROGRESS_METADATA; }
 
-
-    public static String getStarredParam() { return STARRED; }
+    public static String getIsStarredParam() { return IS_STARRED; }
     public static String getIsLoadedParam() { return IS_LOADED; }
-    public static String getCreatedDateParam() { return CREATED_DATE; }
+    public static String getIsNewParam() { return IS_NEW; }
 
+    public static String getCreatedDateParam() { return CREATED_DATE; }
 
 
 }
