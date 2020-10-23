@@ -72,9 +72,13 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.createNewProject(message);
         }
-        else if(action.equals(PortfolioDbQuery.getAllProjectsForAnnotationType()))
+        else if(action.equals(PortfolioDbQuery.getProjectMetadata()))
         {
-            this.getAllProjectsForAnnotationType(message);
+            this.getProjectMetadata(message);
+        }
+        else if(action.equals(PortfolioDbQuery.getAllProjectsMetadata()))
+        {
+            this.getAllProjectsMetadata(message);
         }
         else if(action.equals(PortfolioDbQuery.updateLabelList()))
         {
@@ -249,11 +253,50 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         });
     }
 
-    public void getAllProjectsForAnnotationType(Message<JsonObject> message)
+    public void getProjectMetadata(Message<JsonObject> message)
+    {
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectMetadata(), new JsonArray().add(projectID), fetch -> {
+            if (fetch.succeeded()) {
+
+                List<JsonObject> result = new ArrayList<>();
+
+                JsonArray row = fetch.result().getResults().get(0);
+
+                String projectName = row.getString(0);
+                List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(1));
+
+                Integer isNew = row.getInteger(2);
+                Integer isStarred = row.getInteger(3);
+                Integer isLoaded = row.getInteger(4);
+                String dataTime = row.getString(5);
+
+                //project_name, uuid_list, is_new, is_starred, is_loaded, created_date
+                result.add(new JsonObject()
+                        .put(ParamConfig.getProjectNameParam(), projectName)
+                        .put(ParamConfig.getIsNewParam(), isNew)
+                        .put(ParamConfig.getIsStarredParam(), isStarred)
+                        .put(ParamConfig.getIsLoadedParam(), isLoaded)
+                        .put(ParamConfig.getCreatedDateParam(), dataTime)
+                        .put(ParamConfig.getTotalUUIDParam(), uuidList.size()));
+
+                JsonObject response = ReplyHandler.getOkReply();
+                response.put(ParamConfig.getContent(), result);
+
+                message.reply(response);
+            }
+            else {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    public void getAllProjectsMetadata(Message<JsonObject> message)
     {
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsForAnnotationType(), new JsonArray().add(annotationTypeIndex), fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsMetadata(), new JsonArray().add(annotationTypeIndex), fetch -> {
             if (fetch.succeeded()) {
 
                 ResultSet resultSet = fetch.result();

@@ -27,5 +27,5 @@ public interface PortfolioServiceable
 
     void getProjectUUIDList(Message<JsonObject> message);
 
-    void getAllProjectsForAnnotationType(Message<JsonObject> message);
+    void getAllProjectsMetadata(Message<JsonObject> message);
 }

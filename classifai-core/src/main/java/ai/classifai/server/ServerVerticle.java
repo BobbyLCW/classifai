@@ -69,34 +69,103 @@ public class ServerVerticle extends AbstractVerticle
     }
 
     /**
-     * Get a list of all projects under the category of bounding box
-     * PUT http://localhost:{port}/bndbox/projects
+     * Retrieve metadata of bounding box project
+     *
+     * GET http://localhost:{port}/bndbox/projects/:project_name/meta
      *
      */
-    private void getAllBoundingBoxProjects(RoutingContext context)
+    public void getBndBoxMetadata(RoutingContext context)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        getProjectMetadata(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveData(), projectName, AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Retrieve metadata of segmentation project
+     *
+     * GET http://localhost:{port}/seg/projects/:project_name/meta
+     *
+     */
+    public void getSegMetadata(RoutingContext context)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+
+        getProjectMetadata(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveData(), projectName, AnnotationType.SEGMENTATION);
+    }
+
+    /**
+     * Retrieve metadata of project
+     */
+    private void getProjectMetadata(RoutingContext context, String queue, String query, String projectName, AnnotationType annotationType)
+    {
+        log.info("Get metadata of project: " + projectName + " of annotation type: " + annotationType.name());
+
+        ProjectLoader loader = getProjectLoader(context, projectName, annotationType);
+
+        if(loader == null)
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in retrieving metadata of project: " + projectName));
+        }
+
+        JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIDParam(), loader.getProjectID());
+
+        //load label list
+        DeliveryOptions metadataOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectMetadata());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, metadataOptions, metaReply ->
+        {
+            if (metaReply.succeeded()) {
+
+                JsonObject metaResponse = (JsonObject) metaReply.result().body();
+
+                if (ReplyHandler.isReplyOk(metaResponse))
+                {
+                    HTTPResponseHandler.configureOK(context, metaResponse);
+                }
+                else
+                {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName));
+                }
+
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Server reply failure message when retrieving project metadata " + projectName));
+            }
+        });
+    }
+
+
+    /**
+     * Get metadata of all bounding box projects
+     * GET http://localhost:{port}/bndbox/projects/meta
+     *
+     */
+    private void getAllBndBoxProjectsMetadata(RoutingContext context)
     {
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
 
-        getAllProjects(context, request, AnnotationType.BOUNDINGBOX);
+        getAllProjectsMetadata(context, request, AnnotationType.BOUNDINGBOX);
     }
 
     /**
-     * Get a list of all projects under the category of segmentation
-     * PUT http://localhost:{port}/seg/projects
+     * Get metadata of all segmentation projects
+     * GET http://localhost:{port}/seg/projects/meta
      *
      */
-    private void getAllSegmentationProjects(RoutingContext context)
+    private void getAllSegProjectsMetadata(RoutingContext context)
     {
         JsonObject request = new JsonObject()
                 .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.SEGMENTATION.ordinal());
 
-        getAllProjects(context, request, AnnotationType.SEGMENTATION);
+        getAllProjectsMetadata(context, request, AnnotationType.SEGMENTATION);
     }
 
-    private void getAllProjects(RoutingContext context, JsonObject request, AnnotationType type)
+    private void getAllProjectsMetadata(RoutingContext context, JsonObject request, AnnotationType type)
     {
-        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getAllProjectsForAnnotationType());
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getAllProjectsMetadata());
 
         vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
 
@@ -121,7 +190,7 @@ public class ServerVerticle extends AbstractVerticle
      * PUT http://localhost:{port}/bndbox/newproject/helloworld
      *
      */
-    private void createBoundingBoxProject(RoutingContext context)
+    private void createBndBoxProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
@@ -139,7 +208,7 @@ public class ServerVerticle extends AbstractVerticle
      * PUT http://localhost:{port}/seg/newproject/helloworld
      *
      */
-    private void createSegmentationProject(RoutingContext context)
+    private void createSegProject(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         JsonObject request = new JsonObject()
@@ -584,7 +653,7 @@ public class ServerVerticle extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/:project_name/uuid/:uuid/thumbnail
      *
      */
-    public void getBndBoxMetadata(RoutingContext context)
+    public void getBndBoxThumbnail(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.BOUNDINGBOX.ordinal());
@@ -594,7 +663,7 @@ public class ServerVerticle extends AbstractVerticle
                 .put(ParamConfig.getProjectIDParam(), projectID)
                 .put(ParamConfig.getProjectNameParam(), projectName);
 
-        getMetadata(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveData(), request);
+        getThumbnail(context, BoundingBoxDbQuery.getQueue(), BoundingBoxDbQuery.retrieveData(), request);
     }
 
     /**
@@ -603,7 +672,7 @@ public class ServerVerticle extends AbstractVerticle
      * GET http://localhost:{port}/seg/projects/:project_name/uuid/:uuid/thumbnail
      *
      */
-    public void getSegMetadata(RoutingContext context)
+    public void getSegThumbnail(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
         Integer projectID = ProjectHandler.getProjectID(projectName, AnnotationType.SEGMENTATION.ordinal());
@@ -613,10 +682,10 @@ public class ServerVerticle extends AbstractVerticle
                 .put(ParamConfig.getProjectIDParam(), projectID)
                 .put(ParamConfig.getProjectNameParam(), projectName);
 
-        getMetadata(context, SegDbQuery.getQueue(), SegDbQuery.retrieveData(), request);
+        getThumbnail(context, SegDbQuery.getQueue(), SegDbQuery.retrieveData(), request);
     }
 
-    public void getMetadata(RoutingContext context, String queue, String query, JsonObject request)
+    public void getThumbnail(RoutingContext context, String queue, String query, JsonObject request)
     {
         DeliveryOptions thumbnailOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
 
@@ -829,9 +898,9 @@ public class ServerVerticle extends AbstractVerticle
 
         //*******************************Bounding Box*******************************
 
-        router.get("/bndbox/projects").handler(this::getAllBoundingBoxProjects);
+        router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMetadata);
 
-        router.put("/bndbox/newproject/:project_name").handler(this::createBoundingBoxProject);
+        router.put("/bndbox/newproject/:project_name").handler(this::createBndBoxProject);
 
         router.get("/bndbox/projects/:project_name").handler(this::loadBndBoxProject);
 
@@ -843,7 +912,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::createNewBndBoxLabels);
 
-        router.get("/bndbox/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getBndBoxMetadata);
+        router.get("/bndbox/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getBndBoxThumbnail);
 
         router.get("/bndbox/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getBndBoxImageSource);
 
@@ -853,9 +922,9 @@ public class ServerVerticle extends AbstractVerticle
 
         //*******************************Segmentation*******************************
 
-        router.get("/seg/projects").handler(this::getAllSegmentationProjects);
+        router.get("/seg/projects/meta").handler(this::getAllSegProjectsMetadata);
 
-        router.put("/seg/newproject/:project_name").handler(this::createSegmentationProject);
+        router.put("/seg/newproject/:project_name").handler(this::createSegProject);
 
         router.get("/seg/projects/:project_name").handler(this::loadSegProject);
 
@@ -867,7 +936,7 @@ public class ServerVerticle extends AbstractVerticle
 
         router.put("/seg/projects/:project_name/newlabels").handler(this::createNewSegLabels);
 
-        router.get("/seg/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getSegMetadata);
+        router.get("/seg/projects/:project_name/uuid/:uuid/thumbnail").handler(this::getSegThumbnail);
 
         router.get("/seg/projects/:project_name/uuid/:uuid/imgsrc").handler(this::getSegImageSource);
 

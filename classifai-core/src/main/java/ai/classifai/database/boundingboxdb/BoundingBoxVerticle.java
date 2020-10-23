@@ -17,6 +17,7 @@ package ai.classifai.database.boundingboxdb;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.ProjectLoader;
+import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
 import ai.classifai.util.ProjectHandler;
@@ -122,7 +123,7 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         });
     }
 
-    public static void  updateUUID(@NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
+    public static void updateUUID(@NonNull Integer projectID, @NonNull File file, @NonNull Integer UUID, @NonNull Integer currentProcessedLength)
     {
         JsonArray params = new JsonArray()
                 .add(UUID) //uuid
@@ -154,7 +155,6 @@ public class BoundingBoxVerticle extends AbstractVerticle implements BoundingBox
         });
 
     }
-
 
     /*
     GET http://localhost:{port}/retrievedata/:uuid
