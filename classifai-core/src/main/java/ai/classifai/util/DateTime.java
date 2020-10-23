@@ -15,6 +15,8 @@
  */
 package ai.classifai.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -23,14 +25,24 @@ import java.time.format.DateTimeFormatter;
  *
  * @author codenamewei
  */
+@Slf4j
 public class DateTime {
 
-    private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+    private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm:ss a");
 
     public static String get()
     {
-        LocalDateTime now = LocalDateTime.now();
+        try
+        {
+            LocalDateTime now = LocalDateTime.now();
 
-        return dtf.format(now);
+            return dtf.format(now);
+        }
+        catch(Exception e)
+        {
+            log.error("Error in getting datetime: ", e.getMessage());
+        }
+
+        return null;
     }
 }

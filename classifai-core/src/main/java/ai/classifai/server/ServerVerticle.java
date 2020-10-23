@@ -74,7 +74,7 @@ public class ServerVerticle extends AbstractVerticle
      * GET http://localhost:{port}/bndbox/projects/:project_name/meta
      *
      */
-    public void getBndBoxMetadata(RoutingContext context)
+    public void getBndBoxProjectMeta(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -87,7 +87,7 @@ public class ServerVerticle extends AbstractVerticle
      * GET http://localhost:{port}/seg/projects/:project_name/meta
      *
      */
-    public void getSegMetadata(RoutingContext context)
+    public void getSegProjectMeta(RoutingContext context)
     {
         String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
 
@@ -898,7 +898,12 @@ public class ServerVerticle extends AbstractVerticle
 
         //*******************************Bounding Box*******************************
 
+        //FIXME: Replaced with /meta. Remove this when changes reflected
+        router.get("/bndbox/projects").handler(this::getAllBndBoxProjectsMetadata);
+
         router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMetadata);
+
+        router.get("/bndbox/projects/:project_name/meta").handler(this::getBndBoxProjectMeta);
 
         router.put("/bndbox/newproject/:project_name").handler(this::createBndBoxProject);
 
@@ -922,7 +927,13 @@ public class ServerVerticle extends AbstractVerticle
 
         //*******************************Segmentation*******************************
 
+
+        //FIXME: Replaced with /meta. Remove this when changes reflected
+        router.get("/seg/projects").handler(this::getAllBndBoxProjectsMetadata);
+
         router.get("/seg/projects/meta").handler(this::getAllSegProjectsMetadata);
+
+        router.get("/seg/projects/:project_name/meta").handler(this::getSegProjectMeta);
 
         router.put("/seg/newproject/:project_name").handler(this::createSegProject);
 
