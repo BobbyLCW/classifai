@@ -84,13 +84,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.updateLabelList(message);
         }
-        else if(action.equals(PortfolioDbQuery.getProjectUUIDList()))
+        else if(action.equals(PortfolioDbQuery.getProjectLabelUUIDList()))
         {
-            this.getProjectUUIDList(message);
-        }
-        else if(action.equals(PortfolioDbQuery.getProjectLabelList()))
-        {
-            this.getLabelList(message);
+            this.getProjectLabelUUIDList(message);
         }
         else
         {
@@ -183,27 +179,38 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         });
     }
 
-    public void getProjectUUIDList(Message<JsonObject> message)
+    public void getProjectLabelUUIDList(Message<JsonObject> message)
     {
         Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
 
         JsonArray params = new JsonArray().add(projectID);
 
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectUUIDList(), params, fetch -> {
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectLabelUUIDList(), params, fetch -> {
 
             if(fetch.succeeded()) {
                 try {
                     ResultSet resultSet = fetch.result();
 
                     JsonArray row = resultSet.getResults().get(0);
-                    JsonObject response = ReplyHandler.getOkReply();
 
-                    String strList = row.getString(0);
+                    List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
                     Integer uuidGeneratorSeed = row.getInteger(1);
+                    List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(2));
 
-                    List<Integer> uuidList = ConversionHandler.string2IntegerList(strList);
+                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+                    if(loader != null)
+                    {
+                        loader.setLabelList(labelList);
+                    }
+                    else if(loader == null)
+                    {
+                        log.info("Project Loader null. New label list failed to add into Project Loader. Program expected to failed");
+                    }
+
+                    JsonObject response = ReplyHandler.getOkReply();
                     //FIX ME: GET THE MAXIMUM AND set the generator if needed
-                    response.put(ParamConfig.getUUIDListParam(), uuidList);//row.getString(0)));
+                    response.put(ParamConfig.getUUIDListParam(), uuidList);
                     response.put(ParamConfig.getUuidGeneratorParam(), uuidGeneratorSeed);
 
                     message.reply(response);
@@ -214,40 +221,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             }
             else {
                 //query database failed
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
-    }
-
-    public void getLabelList(Message<JsonObject> message)
-    {
-        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
-
-        JsonArray params = new JsonArray().add(projectID);
-
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectLabelList(), params, fetch -> {
-
-            if (fetch.succeeded()) {
-                ResultSet resultSet = fetch.result();
-                JsonArray row = resultSet.getResults().get(0);
-
-                List<String> labelList = ConversionHandler.string2StringList(row.getString(0));
-
-                ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-
-                if(loader != null)
-                {
-                    loader.setLabelList(labelList);
-                }
-                else if(loader == null)
-                {
-                    log.info("Project Loader null. New label list failed to add into Project Loader. Program expected to failed");
-                }
-
-                message.reply(ReplyHandler.getOkReply());
-
-            } else
-            {
                 message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
             }
         });
@@ -451,7 +424,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
     @Override
     public void start(Promise<Void> promise) throws Exception
     {
-
         portfolioDbClient = JDBCClient.create(vertx, new JsonObject()
                 .put("url", "jdbc:hsqldb:file:" + DatabaseConfig.getPortfolioDb())
                 .put("driver_class", "org.hsqldb.jdbcDriver")

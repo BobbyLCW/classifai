@@ -285,66 +285,48 @@ public class ServerVerticle extends AbstractVerticle
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIDParam(), loader.getProjectID());
 
-            //load label list
-            DeliveryOptions labelOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectLabelList());
+            //Load label list and uuid list
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectLabelUUIDList());
 
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, labelOptions, labelReply ->
+            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
             {
-                if (labelReply.succeeded())
+                if (reply.succeeded())
                 {
-                    JsonObject labelResponse = (JsonObject) labelReply.result().body();
+                    JsonObject uuidResponse = (JsonObject) reply.result().body();
 
-                    if (ReplyHandler.isReplyOk(labelResponse))
+                    if (ReplyHandler.isReplyOk(uuidResponse))
                     {
-                        //Load label list in ProjectLoader success. Proceed with getting uuid list for processing
-                        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getProjectUUIDList());
+                        JsonArray uuidListArray = uuidResponse.getJsonArray(ParamConfig.getUUIDListParam());
 
-                        vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
+                        Integer uuidGeneratorSeed = uuidResponse.getInteger(ParamConfig.getUuidGeneratorParam());
+
+                        JsonObject uuidListObject = jsonObject.put(ParamConfig.getUUIDListParam(), uuidListArray).put(ParamConfig.getProjectIDParam(), loader.getProjectID()).put(ParamConfig.getUuidGeneratorParam(), uuidGeneratorSeed);
+
+                        DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
+
+                        //start checking uuid if it's path is still exist
+                        vertx.eventBus().request(queue, uuidListObject, uuidListOptions, fetch ->
                         {
-                            if (reply.succeeded())
+                            JsonObject removalResponse = (JsonObject) fetch.result().body();
+
+                            if (ReplyHandler.isReplyOk(removalResponse))
                             {
-                                JsonObject uuidResponse = (JsonObject) reply.result().body();
+                                HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
 
-                                if (ReplyHandler.isReplyOk(uuidResponse))
-                                {
-                                    JsonArray uuidListArray = uuidResponse.getJsonArray(ParamConfig.getUUIDListParam());
-
-                                    Integer uuidGeneratorSeed = uuidResponse.getInteger(ParamConfig.getUuidGeneratorParam());
-
-                                    JsonObject uuidListObject = jsonObject.put(ParamConfig.getUUIDListParam(), uuidListArray).put(ParamConfig.getProjectIDParam(), loader.getProjectID()).put(ParamConfig.getUuidGeneratorParam(), uuidGeneratorSeed);
-
-                                    DeliveryOptions uuidListOptions = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), query);
-
-                                    //start checking uuid if it's path is still exist
-                                    vertx.eventBus().request(queue, uuidListObject, uuidListOptions, fetch ->
-                                    {
-                                        JsonObject removalResponse = (JsonObject) fetch.result().body();
-
-                                        if (ReplyHandler.isReplyOk(removalResponse))
-                                        {
-                                            HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
-
-                                        } else
-                                        {
-                                            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
-                                        }
-                                    });
-                                }
-                                else
-                                {
-                                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Get project uuid list failed."));
-                                }
-                            }
-                            else
+                            } else
                             {
-                                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Query database to get project uuid list failed."));
+                                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
                             }
                         });
                     }
                     else
                     {
-                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Server reply failure message when retrieving uuid list of project " + projectName + ". Loading project aborted."));
+                        HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Get project uuid list failed."));
                     }
+                }
+                else
+                {
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Query database to get project uuid list failed."));
                 }
             });
         }
@@ -890,7 +872,7 @@ public class ServerVerticle extends AbstractVerticle
 
         //*******************************Bounding Box*******************************
 
-        //FIXME: Replaced with /meta. Remove this when changes reflected
+        //FIXME- Deprecated - Replaced with /meta. Remove this when changes reflected
         router.get("/bndbox/projects").handler(this::getAllBndBoxProjectsMetadata);
 
         router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMetadata);
@@ -920,7 +902,7 @@ public class ServerVerticle extends AbstractVerticle
         //*******************************Segmentation*******************************
 
 
-        //FIXME: Replaced with /meta. Remove this when changes reflected
+        //FIXME- Deprecated - Replaced with /meta. Remove this when changes reflected
         router.get("/seg/projects").handler(this::getAllBndBoxProjectsMetadata);
 
         router.get("/seg/projects/meta").handler(this::getAllSegProjectsMetadata);
