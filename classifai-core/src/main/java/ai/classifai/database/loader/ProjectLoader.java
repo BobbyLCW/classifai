@@ -18,6 +18,7 @@ package ai.classifai.database.loader;
 import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.selector.filesystem.FileSystemStatus;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,10 +44,13 @@ public class ProjectLoader {
     private List<String> labelList;
 
     @Getter
-    private Integer annotationType;
+    private Integer annotationTypeInt;
     @Getter
     private Integer projectID;
     private String projectName;
+
+    //boolean to state if project newly created
+    private boolean isNewProject;
 
     //Status when dealing with file/folder opener
     @Getter
@@ -73,12 +77,13 @@ public class ProjectLoader {
     private Integer currentUUIDMarker;
     private Integer totalUUIDMaxLen;
 
-    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus)
+    public ProjectLoader(@NonNull Integer currentProjectID, @NonNull String currentProjectName, @NonNull Integer currentAnnotationTypeInt, boolean currentIsNewProject, LoaderStatus currentLoaderStatus)
     {
         projectID = currentProjectID;
         projectName = currentProjectName;
-        annotationType = annotationTypeInt;
+        annotationTypeInt = currentAnnotationTypeInt;
 
+        isNewProject = currentIsNewProject;
         loaderStatus = currentLoaderStatus;
 
         labelList = new ArrayList<>();
@@ -88,7 +93,6 @@ public class ProjectLoader {
 
         reset(FileSystemStatus.DID_NOT_INITIATE);
     }
-
 
     public void reset(FileSystemStatus currentFileSystemStatus)
     {
@@ -105,13 +109,12 @@ public class ProjectLoader {
 
     public void setLoaderStatus(LoaderStatus status)
     {
-        if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
+        if(isNewProject && loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
         {
             PortfolioVerticle.updateIsNewParam(projectID);
         }
 
         loaderStatus = status;
-
     }
 
     //loading project from database

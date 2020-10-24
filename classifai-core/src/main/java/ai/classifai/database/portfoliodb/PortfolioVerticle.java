@@ -134,7 +134,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 if (fetch.succeeded())
                 {
-                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationType, LoaderStatus.LOADED);
+                    ProjectHandler.buildProjectLoader(projectName, projectID, annotationType);
                     message.reply(ReplyHandler.getOkReply());
                 }
                 else
@@ -412,7 +412,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                                     Integer thisProjectID = projectIDJson.getInteger(0);
                                     Integer isNewProject = row.getInteger(2);
 
-                                    ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, isNewProject, LoaderStatus.DID_NOT_INITIATED);
+                                    ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, isNewProject.equals(1) ? true : false, LoaderStatus.DID_NOT_INITIATED);
                                 }
                             } else {
                                 log.info("Retrieving project name failed: ", projectNameFetch.cause().getMessage());

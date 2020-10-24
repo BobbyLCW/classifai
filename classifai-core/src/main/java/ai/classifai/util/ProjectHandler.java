@@ -124,8 +124,17 @@ public class ProjectHandler {
         return getProjectID(key);
     }
 
+    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType)
+    {
+        buildProjectLoaderMain(projectName, projectID, annotationType, true, LoaderStatus.LOADED);
+    }
 
-    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus)
+    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, boolean isNewProject, LoaderStatus loaderStatus)
+    {
+        buildProjectLoaderMain(projectName, projectID, annotationType, isNewProject, loaderStatus);
+    }
+
+    private static void buildProjectLoaderMain(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, boolean isNewProject, LoaderStatus loaderStatus)
     {
         if(!checkAnnotationSanity(annotationType))
         {
@@ -138,7 +147,7 @@ public class ProjectHandler {
         projectIDSearch.put(projectNameWithType, projectID);
         projectNameSearch.put(projectID, projectNameWithType);
 
-        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, loaderStatus));
+        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, isNewProject, loaderStatus));
     }
 
     private static boolean checkAnnotationSanity(Integer annotationTypeInt)
