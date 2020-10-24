@@ -85,6 +85,9 @@ public class ParamConfig
     private final static String IS_LOADED = "is_loaded";
     private final static String CREATED_DATE = "created_date";
 
+    //V2
+    private final static String STATUS_PARAM = "status";
+
     public static File getFileSysRootSearchPath() { return ROOT_SEARCH_PATH; }
     public static String getLogFilePath() { return LOG_FILE_PATH; }
 
@@ -137,5 +140,7 @@ public class ParamConfig
 
     public static String getCreatedDateParam() { return CREATED_DATE; }
 
+    //V2
+    public static String getStatusParam() { return STATUS_PARAM; }
 
 }

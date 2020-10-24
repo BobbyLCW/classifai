@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ConversionHandler
 {
-
     public static <T> List<T> set2List(Set<T> setList)
     {
         List<T> list = new ArrayList<T>();
@@ -53,6 +52,22 @@ public class ConversionHandler
             sb.append(input[i]);
         }
         return sb.toString();
+    }
+
+    public static boolean String2boolean(String input) throws Exception
+    {
+        boolean value = false;
+
+        if(input.equals("true") || input.equals("false"))
+        {
+            value = Boolean.parseBoolean(input);
+        }
+        else
+        {
+            throw new Exception("String to boolean failed as input: " + input + ". Only allowed string input of true / false.");
+        }
+
+        return value;
     }
 
     //JSONObject -> .json

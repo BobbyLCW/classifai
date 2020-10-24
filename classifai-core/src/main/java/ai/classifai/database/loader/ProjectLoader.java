@@ -47,6 +47,7 @@ public class ProjectLoader {
     private Integer annotationTypeInt;
     @Getter
     private Integer projectID;
+    @Getter
     private String projectName;
 
     //boolean to state if project newly created

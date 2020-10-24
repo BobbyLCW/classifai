@@ -34,8 +34,6 @@ public class PortfolioDbQuery
 
     private final static String UPDATE_LABEL_LIST = "update Portfolio set label_list = ? where project_id = ?";
 
-    private final static String UPDATE_IS_NEW_PARAM = "update Portfolio set is_new = ? where project_id = ?";
-
     private final static String GET_PROJECT_ID_LIST = "select project_id from Portfolio";
 
     private final static String INIT_PROJECT_LOADER = "select project_name, annotation_type, is_new from Portfolio where project_id = ?";
@@ -51,6 +49,11 @@ public class PortfolioDbQuery
 
     private final static String GET_ALL_PROJECTS_METADATA = "select project_name, uuid_list, is_new, is_starred, is_loaded, created_date from Portfolio where annotation_type = ?";
 
+    //V2
+    private final static String UPDATE_IS_NEW_PARAM = "update Portfolio set is_new = ? where project_id = ?";
+
+    private final static String STAR_PROJECT = "update Portfolio set is_starred = ? where project_id = ?";
+
     public static String getQueue(){ return QUEUE; }
 
     public static String createPortfolioTable() { return CREATE_PORTFOLIO_TABLE; }
@@ -62,8 +65,6 @@ public class PortfolioDbQuery
     public static String updateUUIDGeneratorSeed() { return UPDATE_UUID_GENERATOR_SEED; }
 
     public static String updateLabelList() { return UPDATE_LABEL_LIST; }
-
-    public static String updateIsNewParam() { return UPDATE_IS_NEW_PARAM; }
 
     public static String initProjectLoader() { return INIT_PROJECT_LOADER; }
 
@@ -79,4 +80,11 @@ public class PortfolioDbQuery
 
     @Deprecated
     public static String getAllProjectsForAnnotationType() { return GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE; }
+
+    //v2
+
+    public static String updateIsNewParam() { return UPDATE_IS_NEW_PARAM; }
+
+    public static String starProject() { return STAR_PROJECT; }
+
 }

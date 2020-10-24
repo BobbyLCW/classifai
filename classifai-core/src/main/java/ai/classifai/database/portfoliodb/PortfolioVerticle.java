@@ -92,6 +92,11 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.getProjectLabelUUIDList(message);
         }
+        //v2
+        else if(action.equals(PortfolioDbQuery.starProject()))
+        {
+            this.starProject(message);
+        }
         else
         {
             log.error("Portfolio query error. Action did not have an assigned function for handling.");
@@ -129,9 +134,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                                     .add(ParamConfig.getEmptyArray()) //label_list
                                     .add(0)                           //uuid_generator_seed
                                     .add(ParamConfig.getEmptyArray()) //uuid_list
-                                    .add(true)                           //is_new
-                                    .add(false)                           //is_starred
-                                    .add(false)                           //is_loaded
+                                    .add(true)                        //is_new
+                                    .add(false)                       //is_starred
+                                    .add(false)                       //is_loaded
                                     .add(DateTime.get());             //created_date
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
@@ -245,6 +250,47 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
             }
         });
     }
+
+    //V2 API
+    public void starProject(Message<JsonObject> message)
+    {
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+        Object isStarObject = message.body().getString(ParamConfig.getStatusParam());
+
+        boolean isStarStatus;
+
+        try
+        {
+            if(isStarObject instanceof String)
+            {
+                String isStarStr = (String) isStarObject;
+
+                isStarStatus = ConversionHandler.String2boolean(isStarStr);
+            }
+            else
+            {
+                throw new Exception("Status != String. Could not convert to boolean for starring.");
+            }
+        }
+        catch(Exception e)
+        {
+            message.reply(ReplyHandler.reportUserDefinedError("Starring object value is not boolean. Failed to execute"));
+            return;
+        }
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.starProject(), new JsonArray().add(isStarStatus).add(projectID), fetch ->{
+
+            if(fetch.succeeded())
+            {
+                message.reply(ReplyHandler.getOkReply());
+            }
+            else
+            {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
 
     //V1 API
     @Deprecated
