@@ -29,29 +29,41 @@ import java.util.*;
  * @author codenamewei
  */
 @Slf4j
-public class ProjectLoader
-{
+public class ProjectLoader {
     //Load an existing project from database
     //After loaded once, this value will be always LOADED so retrieving of project from memory than db
-    @Getter @Setter private LoaderStatus loaderStatus;
+    @Getter
+    private LoaderStatus loaderStatus;
 
-    @Getter @Setter private Integer uuidGeneratorSeed;
-    @Getter @Setter private List<String> labelList;
+    @Getter
+    @Setter
+    private Integer uuidGeneratorSeed;
+    @Getter
+    @Setter
+    private List<String> labelList;
 
-    @Getter private Integer annotationType;
-    @Getter private Integer projectID;
+    @Getter
+    private Integer annotationType;
+    @Getter
+    private Integer projectID;
     private String projectName;
 
     //Status when dealing with file/folder opener
-    @Getter private FileSystemStatus fileSystemStatus;
+    @Getter
+    private FileSystemStatus fileSystemStatus;
 
     //list to send the new added datapoints as thumbnails to front end
-    @Getter private List<Integer> fileSysNewUUIDList;
+    @Getter
+    private List<Integer> fileSysNewUUIDList;
 
     //a list of unique uuid representing number of data points in one project
-    @Getter private List<Integer> sanityUUIDList;
+    @Getter
+    private List<Integer> sanityUUIDList;
 
-    @Getter private List<Integer> progressUpdate;
+    @Getter
+    private List<Integer> progressUpdate;
+
+    @Setter private boolean isNewProject;
 
     //Set to push in unique uuid to prevent recurrence
     //this will eventually port into List<Integer>
@@ -63,13 +75,14 @@ public class ProjectLoader
     private Integer currentUUIDMarker;
     private Integer totalUUIDMaxLen;
 
-    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus)
+    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, boolean isNew, LoaderStatus currentLoaderStatus)
     {
         projectID = currentProjectID;
         projectName = currentProjectName;
         annotationType = annotationTypeInt;
 
         loaderStatus = currentLoaderStatus;
+        isNewProject = isNew;
 
         labelList = new ArrayList<>();
         sanityUUIDList = new ArrayList<>();
@@ -78,6 +91,7 @@ public class ProjectLoader
 
         reset(FileSystemStatus.DID_NOT_INITIATE);
     }
+
 
     public void reset(FileSystemStatus currentFileSystemStatus)
     {
@@ -90,6 +104,19 @@ public class ProjectLoader
         progressUpdate = new ArrayList<>(Arrays.asList(currentUUIDMarker, totalUUIDMaxLen));
 
         fileSystemStatus = currentFileSystemStatus;
+    }
+
+    public void setLoaderStatus(LoaderStatus status)
+    {
+        if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
+        {
+            isNewProject = false;
+            PortfolioVerticle.updateIsNewParam(projectID);
+            PortfolioVerticle.updateIsLoadedParam(projectID);
+        }
+
+        loaderStatus = status;
+
     }
 
     //loading project from database

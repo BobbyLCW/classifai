@@ -141,6 +141,18 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     }
 
+    public static void updateIsNewParam(@NonNull Integer projectID)
+    {
+        JsonArray params = new JsonArray().add(0).add(projectID);
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateIsNewParam(), params, fetch -> {
+
+            if(!fetch.succeeded()) {
+                log.error("Update is_new parameter in Portfolio failed. Project expected to not able to show correctly if its a new project: ", fetch.cause().getMessage());
+            }
+        });
+    }
+
     public static void updateUUIDGeneratorSeed(@NonNull Integer projectID, @NonNull Integer seedNumber)
     {
         ProjectHandler.getProjectLoader(projectID).setUuidGeneratorSeed(seedNumber);
@@ -187,7 +199,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectLabelUUIDList(), params, fetch -> {
 
-            if(fetch.succeeded()) {
+            if(fetch.succeeded())
+            {
                 try {
                     ResultSet resultSet = fetch.result();
 
@@ -198,15 +211,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(2));
 
                     ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
-
-                    if(loader != null)
-                    {
-                        loader.setLabelList(labelList);
-                    }
-                    else if(loader == null)
-                    {
-                        log.info("Project Loader null. New label list failed to add into Project Loader. Program expected to failed");
-                    }
+                    loader.setLabelList(labelList);
 
                     JsonObject response = ReplyHandler.getOkReply();
                     //FIX ME: GET THE MAXIMUM AND set the generator if needed
@@ -215,8 +220,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                     message.reply(response);
                 }
-                catch (Exception e) {
-                    log.info("Failed in getting uuid list, ", e);
+                catch (Exception e)
+                {
+                    log.info("Failed in getting label and uuid list, ", e);
                 };
             }
             else {
@@ -382,7 +388,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     {
                         JsonArray projectIDJson = new JsonArray().add(projectID);
 
-                        portfolioDbClient.queryWithParams(PortfolioDbQuery.getProjectName(), projectIDJson, projectNameFetch -> {
+                        portfolioDbClient.queryWithParams(PortfolioDbQuery.initProjectLoader(), projectIDJson, projectNameFetch -> {
 
                             if (projectNameFetch.succeeded()) {
                                 ResultSet resultSet = projectNameFetch.result();
@@ -394,8 +400,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                                     String projectName = row.getString(0);
                                     Integer annotationType = row.getInteger(1);
                                     Integer thisProjectID = projectIDJson.getInteger(0);
+                                    Integer isNewProject = row.getInteger(2);
 
-                                    ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, LoaderStatus.DID_NOT_INITIATED);
+                                    ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, isNewProject, LoaderStatus.DID_NOT_INITIATED);
                                 }
                             } else {
                                 log.info("Retrieving project name failed: ", projectNameFetch.cause().getMessage());

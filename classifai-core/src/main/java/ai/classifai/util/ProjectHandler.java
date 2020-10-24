@@ -53,7 +53,6 @@ public class ProjectHandler {
     //value: Pair<String projectName, Integer annotationType>
     private static Map projectNameSearch;
 
-
     static {
 
         projectIDGenerator = new AtomicInteger(0);
@@ -126,7 +125,7 @@ public class ProjectHandler {
     }
 
 
-    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, LoaderStatus loaderStatus)
+    public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, @NonNull Integer isNewProject, LoaderStatus loaderStatus)
     {
         if(!checkAnnotationSanity(annotationType))
         {
@@ -139,7 +138,7 @@ public class ProjectHandler {
         projectIDSearch.put(projectNameWithType, projectID);
         projectNameSearch.put(projectID, projectNameWithType);
 
-        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, loaderStatus));
+        projectIDLoaderDict.put(projectID, new ProjectLoader(projectID, projectName, annotationType, isNewProject.equals(1) ? true : false, loaderStatus));
     }
 
     private static boolean checkAnnotationSanity(Integer annotationTypeInt)

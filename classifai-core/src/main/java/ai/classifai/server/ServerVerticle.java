@@ -119,7 +119,6 @@ public class ServerVerticle extends AbstractVerticle
                 {
                     HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to retrieve metadata for project " + projectName));
                 }
-
             }
             else
             {
@@ -274,7 +273,10 @@ public class ServerVerticle extends AbstractVerticle
 
         ProjectLoader loader = getProjectLoader(context, projectName, annotationType);
 
-        if(loader == null) return;
+        if(loader == null)
+        {
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Project Loader null."));
+        }
 
         LoaderStatus loaderStatus = loader.getLoaderStatus();
 
@@ -313,7 +315,8 @@ public class ServerVerticle extends AbstractVerticle
                             {
                                 HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
 
-                            } else
+                            }
+                            else
                             {
                                 HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failed to load project " + projectName + ". Check validity of data points failed."));
                             }
