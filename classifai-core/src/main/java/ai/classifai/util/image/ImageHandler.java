@@ -257,7 +257,6 @@ public class ImageHandler {
         return verifiedFilesList;
     }
 
-
     public static void saveToDatabase(@NonNull Integer projectID, @NonNull List<File> filesCollection)
     {
         ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
