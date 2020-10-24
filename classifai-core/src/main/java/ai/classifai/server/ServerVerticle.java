@@ -864,6 +864,54 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
+    /**
+     * Get a list of all projects under the category of bounding box
+     * PUT http://localhost:{port}/bndbox/projects
+     *
+     */
+    @Deprecated
+    private void getAllBoundingBoxProjects(RoutingContext context)
+    {
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
+
+        getAllProjects(context, request, AnnotationType.BOUNDINGBOX);
+    }
+
+    /**
+     * Get a list of all projects under the category of segmentation
+     * PUT http://localhost:{port}/seg/projects
+     *
+     */
+    @Deprecated
+    private void getAllSegmentationProjects(RoutingContext context)
+    {
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.SEGMENTATION.ordinal());
+
+        getAllProjects(context, request, AnnotationType.SEGMENTATION);
+    }
+
+
+    @Deprecated
+    private void getAllProjects(RoutingContext context, JsonObject request, AnnotationType type)
+    {
+        DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getAllProjectsForAnnotationType());
+
+        vertx.eventBus().request(PortfolioDbQuery.getQueue(), request, options, reply -> {
+
+            if(reply.succeeded())
+            {
+                JsonObject response = (JsonObject) reply.result().body();
+
+                HTTPResponseHandler.configureOK(context, response);
+            }
+            else
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Failure in getting all the projects for " + type.name()));
+            }
+        });
+    }
 
     @Override
     public void start(Promise<Void> promise)
@@ -875,8 +923,8 @@ public class ServerVerticle extends AbstractVerticle
 
         //*******************************Bounding Box*******************************
 
-        //FIXME- Deprecated - Replaced with /meta. Remove this when changes reflected
-        router.get("/bndbox/projects").handler(this::getAllBndBoxProjectsMetadata);
+        //FIXME- Deprecated - V1 API - Replaced with /meta. Remove this when changes reflected
+        router.get("/bndbox/projects").handler(this::getAllBoundingBoxProjects);
 
         router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMetadata);
 
@@ -902,11 +950,21 @@ public class ServerVerticle extends AbstractVerticle
 
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
 
+        //v2
+
+        router.get("/bndbox/projects/:project_name/star").handler(null);
+
+        router.put("/bndbox/projects/:project_name/star").handler(null);
+
+        router.get("/bndbox/projects/:project_name/status").handler(null);
+
+        router.put("/bndbox/projects/:project_name/status").handler(null);
+
         //*******************************Segmentation*******************************
 
 
-        //FIXME- Deprecated - Replaced with /meta. Remove this when changes reflected
-        router.get("/seg/projects").handler(this::getAllBndBoxProjectsMetadata);
+        //FIXME- Deprecated - V1 API - Replaced with /meta. Remove this when changes reflected
+        router.get("/seg/projects").handler(this::getAllSegmentationProjects);
 
         router.get("/seg/projects/meta").handler(this::getAllSegProjectsMetadata);
 
@@ -931,6 +989,16 @@ public class ServerVerticle extends AbstractVerticle
         router.put("/seg/projects/:project_name/uuid/:uuid/update").handler(this::updateSegData);
 
         router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
+
+        //v2
+
+        router.get("/seg/projects/:project_name/star").handler(null);
+
+        router.put("/seg/projects/:project_name/star").handler(null);
+
+        router.get("/seg/projects/:project_name/status").handler(null);
+
+        router.put("/seg/projects/:project_name/status").handler(null);
 
         vertx.createHttpServer()
                 .requestHandler(router)

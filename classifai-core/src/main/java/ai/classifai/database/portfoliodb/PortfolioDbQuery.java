@@ -24,7 +24,7 @@ public class PortfolioDbQuery
 {
     private final static String QUEUE = "portfolio.queue";
 
-    private final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (project_id integer identity primary key, project_name varchar(255), annotation_type integer, label_list varchar(8000), uuid_generator_seed integer, uuid_list clob, is_new integer, is_starred integer, is_loaded integer, created_date varchar(255))";
+    private final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (project_id integer identity primary key, project_name varchar(255), annotation_type integer, label_list varchar(8000), uuid_generator_seed integer, uuid_list clob, is_new boolean, is_starred boolean, is_loaded boolean, created_date varchar(255))";
 
     private final static String CREATE_NEW_PROJECT = "insert into Portfolio values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -41,6 +41,9 @@ public class PortfolioDbQuery
     private final static String INIT_PROJECT_LOADER = "select project_name, annotation_type, is_new from Portfolio where project_id = ?";
 
     private final static String GET_PROJECT_LABEL_UUID_LIST = "select label_list, uuid_generator_seed, uuid_list from Portfolio where project_id = ?";
+
+    //FIXME: Depreciated
+    private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name from Portfolio where annotation_type = ?";
 
     //private final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
 
@@ -74,4 +77,6 @@ public class PortfolioDbQuery
 
     public static String getAllProjectsMetadata() { return GET_ALL_PROJECTS_METADATA; }
 
+    @Deprecated
+    public static String getAllProjectsForAnnotationType() { return GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE; }
 }

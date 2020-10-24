@@ -71,6 +71,10 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         if(action.equals(PortfolioDbQuery.createNewProject()))
         {
             this.createNewProject(message);
+        }//FIXME: Depreciated - V1
+        else if(action.equals(PortfolioDbQuery.getAllProjectsForAnnotationType()))
+        {
+            this.getAllProjectsForAnnotationType(message);
         }
         else if(action.equals(PortfolioDbQuery.getProjectMetadata()))
         {
@@ -125,9 +129,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                                     .add(ParamConfig.getEmptyArray()) //label_list
                                     .add(0)                           //uuid_generator_seed
                                     .add(ParamConfig.getEmptyArray()) //uuid_list
-                                    .add(1)                           //is_new
-                                    .add(0)                           //is_starred
-                                    .add(0)                           //is_loaded
+                                    .add(true)                           //is_new
+                                    .add(false)                           //is_starred
+                                    .add(false)                           //is_loaded
                                     .add(DateTime.get());             //created_date
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
@@ -153,7 +157,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
     public static void updateIsNewParam(@NonNull Integer projectID)
     {
-        JsonArray params = new JsonArray().add(0).add(projectID);
+        JsonArray params = new JsonArray().add(false).add(projectID);
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.updateIsNewParam(), params, fetch -> {
 
@@ -242,6 +246,34 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         });
     }
 
+    //V1 API
+    @Deprecated
+    public void getAllProjectsForAnnotationType(Message<JsonObject> message)
+    {
+        Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.getAllProjectsForAnnotationType(), new JsonArray().add(annotationTypeIndex), fetch -> {
+            if (fetch.succeeded()) {
+
+                List<String> projectNameList = fetch.result()
+                        .getResults()
+                        .stream()
+                        .map(json -> json.getString(0))
+                        .sorted()
+                        .collect(Collectors.toList());
+
+                JsonObject response = ReplyHandler.getOkReply();
+                response.put(ParamConfig.getContent(), projectNameList);
+
+                message.reply(response);
+            }
+            else {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+
     public void getProjectMetadata(Message<JsonObject> message)
     {
         Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
@@ -256,9 +288,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 String projectName = row.getString(0);
                 List<Integer> uuidList = ConversionHandler.string2IntegerList(row.getString(1));
 
-                Integer isNew = row.getInteger(2);
-                Integer isStarred = row.getInteger(3);
-                Integer isLoaded = row.getInteger(4);
+                Boolean isNew = row.getBoolean(2);
+                Boolean isStarred = row.getBoolean(3);
+                Boolean isLoaded = row.getBoolean(4);
                 String dataTime = row.getString(5);
 
                 //project_name, uuid_list, is_new, is_starred, is_loaded, created_date
@@ -302,22 +334,22 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         .map(json -> json.getString(1))
                         .collect(Collectors.toList());
 
-                List<Integer> isNewList = resultSet
+                List<Boolean> isNewList = resultSet
                         .getResults()
                         .stream()
-                        .map(json -> json.getInteger(2))
+                        .map(json -> json.getBoolean(2))
                         .collect(Collectors.toList());
 
-                List<Integer> isStarredList = resultSet
+                List<Boolean> isStarredList = resultSet
                         .getResults()
                         .stream()
-                        .map(json -> json.getInteger(3))
+                        .map(json -> json.getBoolean(3))
                         .collect(Collectors.toList());
 
-                List<Integer> isLoadedList = resultSet
+                List<Boolean> isLoadedList = resultSet
                         .getResults()
                         .stream()
-                        .map(json -> json.getInteger(4))
+                        .map(json -> json.getBoolean(4))
                         .collect(Collectors.toList());
 
                 List<String> dateTimeList = resultSet
@@ -410,9 +442,9 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                                     String projectName = row.getString(0);
                                     Integer annotationType = row.getInteger(1);
                                     Integer thisProjectID = projectIDJson.getInteger(0);
-                                    Integer isNewProject = row.getInteger(2);
+                                    Boolean isNewProject = row.getBoolean(2);
 
-                                    ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, isNewProject.equals(1) ? true : false, LoaderStatus.DID_NOT_INITIATED);
+                                    ProjectHandler.buildProjectLoader(projectName, thisProjectID, annotationType, isNewProject, LoaderStatus.DID_NOT_INITIATED);
                                 }
                             } else {
                                 log.info("Retrieving project name failed: ", projectNameFetch.cause().getMessage());
