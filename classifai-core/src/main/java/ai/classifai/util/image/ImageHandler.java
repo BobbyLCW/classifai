@@ -270,7 +270,7 @@ public class ImageHandler {
         loader.reset(FileSystemStatus.WINDOW_CLOSE_DATABASE_UPDATING);
         loader.setFileSysTotalUUIDSize(filesCollection.size());
 
-        Integer annotationTypeInt = loader.getAnnotationType();
+        Integer annotationTypeInt = loader.getAnnotationTypeInt();
 
         if(annotationTypeInt.equals(AnnotationType.BOUNDINGBOX.ordinal()))
         {

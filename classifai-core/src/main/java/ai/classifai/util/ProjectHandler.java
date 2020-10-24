@@ -126,7 +126,7 @@ public class ProjectHandler {
 
     public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType)
     {
-        buildProjectLoaderMain(projectName, projectID, annotationType, true, LoaderStatus.LOADED);
+        buildProjectLoaderMain(projectName, projectID, annotationType, true, LoaderStatus.DID_NOT_INITIATED);//LoaderStatus.LOADED);
     }
 
     public static void buildProjectLoader(@NonNull String projectName, @NonNull Integer projectID, @NonNull Integer annotationType, boolean isNewProject, LoaderStatus loaderStatus)
