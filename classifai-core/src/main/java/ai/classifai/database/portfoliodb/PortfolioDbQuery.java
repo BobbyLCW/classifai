@@ -40,9 +40,6 @@ public class PortfolioDbQuery
 
     private final static String GET_PROJECT_LABEL_UUID_LIST = "select label_list, uuid_generator_seed, uuid_list from Portfolio where project_id = ?";
 
-    //FIXME: Depreciated
-    private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name from Portfolio where annotation_type = ?";
-
     //private final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
 
     private final static String GET_PROJECT_METADATA = "select project_name, uuid_list, is_new, is_starred, is_loaded, created_date from Portfolio where project_id = ?";
@@ -53,6 +50,11 @@ public class PortfolioDbQuery
     private final static String UPDATE_IS_NEW_PARAM = "update Portfolio set is_new = ? where project_id = ?";
 
     private final static String STAR_PROJECT = "update Portfolio set is_starred = ? where project_id = ?";
+
+    private final static String UPDATE_PROJECT_STATUS = "update Portfolio set is_loaded = ? where project_id = ?";
+
+    //FIXME: Depreciated
+    private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name from Portfolio where annotation_type = ?";
 
     public static String getQueue(){ return QUEUE; }
 
@@ -78,13 +80,15 @@ public class PortfolioDbQuery
 
     public static String getAllProjectsMetadata() { return GET_ALL_PROJECTS_METADATA; }
 
-    @Deprecated
-    public static String getAllProjectsForAnnotationType() { return GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE; }
-
     //v2
-
     public static String updateIsNewParam() { return UPDATE_IS_NEW_PARAM; }
 
     public static String starProject() { return STAR_PROJECT; }
+
+    public static String updateProjectStatus() { return UPDATE_PROJECT_STATUS; }
+
+    @Deprecated
+    public static String getAllProjectsForAnnotationType() { return GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE; }
+
 
 }

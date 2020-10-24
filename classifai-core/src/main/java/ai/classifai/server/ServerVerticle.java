@@ -877,19 +877,54 @@ public class ServerVerticle extends AbstractVerticle
         });
     }
 
-    /**
-     * Get a list of all projects under the category of bounding box
-     * PUT http://localhost:{port}/bndbox/projects
+    /***
+     * Set status of a bounding box project
      *
+     * PUT http://localhost:{port}/bndbox/projects/:projectname/status
      */
-    @Deprecated
-    private void getAllBoundingBoxProjects(RoutingContext context)
+    private void updateBndBoxProjectStatus(RoutingContext context)
     {
-        JsonObject request = new JsonObject()
-                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
-
-        getAllProjects(context, request, AnnotationType.BOUNDINGBOX);
+        updateProjectStatus(context, AnnotationType.BOUNDINGBOX);
     }
+
+    /***
+     * Set status of a bounding box project
+     *
+     * PUT http://localhost:{port}/seg/projects/:projectname/status
+     */
+    private void updateSegProjectStatus(RoutingContext context)
+    {
+        updateProjectStatus(context, AnnotationType.SEGMENTATION);
+    }
+
+    private void updateProjectStatus(RoutingContext context, AnnotationType annotationType)
+    {
+        String projectName = context.request().getParam(ParamConfig.getProjectNameParam());
+        Integer projectID = ProjectHandler.getProjectID(projectName, annotationType.ordinal());
+
+        if(checkIfProjectNull(context, projectID, projectName)) return;
+
+        context.request().bodyHandler(h ->
+        {
+            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
+
+            jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
+
+            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.updateProjectStatus());
+
+            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
+            {
+                if(reply.succeeded())
+                {
+                    JsonObject response = (JsonObject) reply.result().body();
+
+                    HTTPResponseHandler.configureOK(context, response);
+                }
+            });
+        });
+    }
+
+
 
     /***
      * Star a bounding box project
@@ -948,6 +983,20 @@ public class ServerVerticle extends AbstractVerticle
         }
 
         return false;
+    }
+
+    /**
+     * Get a list of all projects under the category of bounding box
+     * PUT http://localhost:{port}/bndbox/projects
+     *
+     */
+    @Deprecated
+    private void getAllBoundingBoxProjects(RoutingContext context)
+    {
+        JsonObject request = new JsonObject()
+                .put(ParamConfig.getAnnotateTypeParam(), AnnotationType.BOUNDINGBOX.ordinal());
+
+        getAllProjects(context, request, AnnotationType.BOUNDINGBOX);
     }
 
     /**
@@ -1024,10 +1073,9 @@ public class ServerVerticle extends AbstractVerticle
         router.put("/bndbox/projects/:project_name/newlabels").handler(this::updateBndBoxLabels);
 
         //v2
-
         router.put("/bndbox/projects/:project_name/star").handler(this::starBndBoxProject);
 
-        router.put("/bndbox/projects/:project_name/status").handler(null);
+        router.put("/bndbox/projects/:project_name/status").handler(this::updateBndBoxProjectStatus);
 
         //*******************************Segmentation*******************************
 
@@ -1060,10 +1108,9 @@ public class ServerVerticle extends AbstractVerticle
         router.put("/seg/projects/:project_name/newlabels").handler(this::updateSegLabels);
 
         //v2
-
         router.put("/seg/projects/:project_name/star").handler(this::starSegProject);
 
-        router.put("/seg/projects/:project_name/status").handler(null);
+        router.put("/seg/projects/:project_name/status").handler(this::updateSegProjectStatus);
 
         vertx.createHttpServer()
                 .requestHandler(router)

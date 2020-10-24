@@ -71,10 +71,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         if(action.equals(PortfolioDbQuery.createNewProject()))
         {
             this.createNewProject(message);
-        }//FIXME: Depreciated - V1
-        else if(action.equals(PortfolioDbQuery.getAllProjectsForAnnotationType()))
-        {
-            this.getAllProjectsForAnnotationType(message);
         }
         else if(action.equals(PortfolioDbQuery.getProjectMetadata()))
         {
@@ -96,6 +92,15 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         else if(action.equals(PortfolioDbQuery.starProject()))
         {
             this.starProject(message);
+        }
+        else if(action.equals(PortfolioDbQuery.updateProjectStatus()))
+        {
+            this.updateProjectStatus(message);
+        }
+        //FIXME: Depreciated - V1
+        else if(action.equals(PortfolioDbQuery.getAllProjectsForAnnotationType()))
+        {
+            this.getAllProjectsForAnnotationType(message);
         }
         else
         {
@@ -279,6 +284,45 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         }
 
         portfolioDbClient.queryWithParams(PortfolioDbQuery.starProject(), new JsonArray().add(isStarStatus).add(projectID), fetch ->{
+
+            if(fetch.succeeded())
+            {
+                message.reply(ReplyHandler.getOkReply());
+            }
+            else
+            {
+                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
+            }
+        });
+    }
+
+    public void updateProjectStatus(Message<JsonObject> message)
+    {
+        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
+        Object isLoadedObject = message.body().getString(ParamConfig.getStatusParam());
+
+        boolean isLoadedStatus;
+
+        try
+        {
+            if(isLoadedObject instanceof String)
+            {
+                String isLoadedStr = (String) isLoadedObject;
+
+                isLoadedStatus = ConversionHandler.String2boolean(isLoadedStr);
+            }
+            else
+            {
+                throw new Exception("Status != String. Could not convert to boolean for is_loaded.");
+            }
+        }
+        catch(Exception e)
+        {
+            message.reply(ReplyHandler.reportUserDefinedError("Starring object value is not boolean. Failed to execute"));
+            return;
+        }
+
+        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateProjectStatus(), new JsonArray().add(isLoadedStatus).add(projectID), fetch ->{
 
             if(fetch.succeeded())
             {
