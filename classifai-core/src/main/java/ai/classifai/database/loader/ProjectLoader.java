@@ -63,8 +63,6 @@ public class ProjectLoader {
     @Getter
     private List<Integer> progressUpdate;
 
-    @Setter private boolean isNewProject;
-
     //Set to push in unique uuid to prevent recurrence
     //this will eventually port into List<Integer>
     private Set<Integer> uuidUniqueSet;
@@ -75,14 +73,13 @@ public class ProjectLoader {
     private Integer currentUUIDMarker;
     private Integer totalUUIDMaxLen;
 
-    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, boolean isNew, LoaderStatus currentLoaderStatus)
+    public ProjectLoader(Integer currentProjectID, String currentProjectName, Integer annotationTypeInt, LoaderStatus currentLoaderStatus)
     {
         projectID = currentProjectID;
         projectName = currentProjectName;
         annotationType = annotationTypeInt;
 
         loaderStatus = currentLoaderStatus;
-        isNewProject = isNew;
 
         labelList = new ArrayList<>();
         sanityUUIDList = new ArrayList<>();
@@ -110,9 +107,7 @@ public class ProjectLoader {
     {
         if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
         {
-            isNewProject = false;
             PortfolioVerticle.updateIsNewParam(projectID);
-            PortfolioVerticle.updateIsLoadedParam(projectID);
         }
 
         loaderStatus = status;

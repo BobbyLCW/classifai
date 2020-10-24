@@ -36,8 +36,6 @@ public class PortfolioDbQuery
 
     private final static String UPDATE_IS_NEW_PARAM = "update Portfolio set is_new = ? where project_id = ?";
 
-    //private final static String UPDATE_
-
     private final static String GET_PROJECT_ID_LIST = "select project_id from Portfolio";
 
     private final static String INIT_PROJECT_LOADER = "select project_name, annotation_type, is_new from Portfolio where project_id = ?";
