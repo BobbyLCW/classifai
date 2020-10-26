@@ -38,7 +38,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -880,7 +879,7 @@ public class ServerVerticle extends AbstractVerticle
     /***
      * Set status of a bounding box project
      *
-     * PUT http://localhost:{port}/bndbox/projects/:projectname/status
+     * PUT http://localhost:{port}/bndbox/projects/:projectname
      */
     private void updateBndBoxProjectStatus(RoutingContext context)
     {
@@ -890,7 +889,7 @@ public class ServerVerticle extends AbstractVerticle
     /***
      * Set status of a bounding box project
      *
-     * PUT http://localhost:{port}/seg/projects/:projectname/status
+     * PUT http://localhost:{port}/seg/projects/:projectname
      */
     private void updateSegProjectStatus(RoutingContext context)
     {
@@ -906,21 +905,32 @@ public class ServerVerticle extends AbstractVerticle
 
         context.request().bodyHandler(h ->
         {
-            io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
-
-            jsonObject.put(ParamConfig.getProjectIDParam(), projectID);
-
-            DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.updateProjectStatus());
-
-            vertx.eventBus().request(PortfolioDbQuery.getQueue(), jsonObject, options, reply ->
+            try
             {
-                if(reply.succeeded())
-                {
-                    JsonObject response = (JsonObject) reply.result().body();
+                io.vertx.core.json.JsonObject jsonObject = ConversionHandler.json2JSONObject(h.toJson());
 
-                    HTTPResponseHandler.configureOK(context, response);
+                String status = jsonObject.getString(ParamConfig.getStatusParam());
+
+                if(status.equals("closed") || status.equals("CLOSED"))
+                {
+                    ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
+
+                    loader.setIsLoaded(false);
+
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
                 }
-            });
+                else
+                {
+                    String errorMessage = "{\"status\" : \"closed\"} need to be submitted to close the project. Current input: " + h.toString();
+                    HTTPResponseHandler.configureOK(context, ReplyHandler.reportBadParamError(errorMessage));
+                }
+            }
+            catch(Exception e)
+            {
+                HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Request body not defined: " + e));
+
+            }
+
         });
     }
 
@@ -977,7 +987,7 @@ public class ServerVerticle extends AbstractVerticle
     {
         if(project == null)
         {
-            HTTPResponseHandler.configureOK(context, ReplyHandler.reportUserDefinedError("Project not found: " + projectName));
+            HTTPResponseHandler.configureOK(context, ReplyHandler.reportBadParamError("Project not found: " + projectName));
 
             return true;
         }
@@ -990,7 +1000,6 @@ public class ServerVerticle extends AbstractVerticle
      * PUT http://localhost:{port}/bndbox/projects
      *
      */
-    @Deprecated
     private void getAllBoundingBoxProjects(RoutingContext context)
     {
         JsonObject request = new JsonObject()
@@ -1004,7 +1013,6 @@ public class ServerVerticle extends AbstractVerticle
      * PUT http://localhost:{port}/seg/projects
      *
      */
-    @Deprecated
     private void getAllSegmentationProjects(RoutingContext context)
     {
         JsonObject request = new JsonObject()
@@ -1014,7 +1022,6 @@ public class ServerVerticle extends AbstractVerticle
     }
 
 
-    @Deprecated
     private void getAllProjects(RoutingContext context, JsonObject request, AnnotationType type)
     {
         DeliveryOptions options = new DeliveryOptions().addHeader(ParamConfig.getActionKeyword(), PortfolioDbQuery.getAllProjectsForAnnotationType());
@@ -1045,7 +1052,6 @@ public class ServerVerticle extends AbstractVerticle
 
         //*******************************Bounding Box*******************************
 
-        //FIXME- Deprecated - V1 API - Replaced with /meta. Remove this when changes reflected
         router.get("/bndbox/projects").handler(this::getAllBoundingBoxProjects);
 
         router.get("/bndbox/projects/meta").handler(this::getAllBndBoxProjectsMetadata);
@@ -1075,12 +1081,10 @@ public class ServerVerticle extends AbstractVerticle
         //v2
         router.put("/bndbox/projects/:project_name/star").handler(this::starBndBoxProject);
 
-        router.put("/bndbox/projects/:project_name/status").handler(this::updateBndBoxProjectStatus);
+        router.put("/bndbox/projects/:project_name").handler(this::updateBndBoxProjectStatus);
 
         //*******************************Segmentation*******************************
 
-
-        //FIXME- Deprecated - V1 API - Replaced with /meta. Remove this when changes reflected
         router.get("/seg/projects").handler(this::getAllSegmentationProjects);
 
         router.get("/seg/projects/meta").handler(this::getAllSegProjectsMetadata);
@@ -1110,7 +1114,7 @@ public class ServerVerticle extends AbstractVerticle
         //v2
         router.put("/seg/projects/:project_name/star").handler(this::starSegProject);
 
-        router.put("/seg/projects/:project_name/status").handler(this::updateSegProjectStatus);
+        router.put("/seg/projects/:project_name").handler(this::updateSegProjectStatus);
 
         vertx.createHttpServer()
                 .requestHandler(router)

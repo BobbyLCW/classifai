@@ -24,9 +24,9 @@ public class PortfolioDbQuery
 {
     private final static String QUEUE = "portfolio.queue";
 
-    private final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (project_id integer identity primary key, project_name varchar(255), annotation_type integer, label_list varchar(8000), uuid_generator_seed integer, uuid_list clob, is_new boolean, is_starred boolean, is_loaded boolean, created_date varchar(255))";
+    private final static String CREATE_PORTFOLIO_TABLE = "create table if not exists Portfolio (project_id integer identity primary key, project_name varchar(255), annotation_type integer, label_list varchar(8000), uuid_generator_seed integer, uuid_list clob, is_new boolean, is_starred boolean, created_date varchar(255))";
 
-    private final static String CREATE_NEW_PROJECT = "insert into Portfolio values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private final static String CREATE_NEW_PROJECT = "insert into Portfolio values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private final static String UPDATE_PROJECT = "update Portfolio set uuid_list = ? where project_id = ?";
 
@@ -42,18 +42,15 @@ public class PortfolioDbQuery
 
     //private final static String REMOVE_OBSOLETE_UUID_LIST = "Removal of obsolete uuid";
 
-    private final static String GET_PROJECT_METADATA = "select project_name, uuid_list, is_new, is_starred, is_loaded, created_date from Portfolio where project_id = ?";
+    private final static String GET_PROJECT_METADATA = "select project_name, uuid_list, is_new, is_starred, created_date from Portfolio where project_id = ?";
 
-    private final static String GET_ALL_PROJECTS_METADATA = "select project_name, uuid_list, is_new, is_starred, is_loaded, created_date from Portfolio where annotation_type = ?";
+    private final static String GET_ALL_PROJECTS_METADATA = "select project_name, uuid_list, is_new, is_starred, created_date from Portfolio where annotation_type = ?";
 
     //V2
     private final static String UPDATE_IS_NEW_PARAM = "update Portfolio set is_new = ? where project_id = ?";
 
     private final static String STAR_PROJECT = "update Portfolio set is_starred = ? where project_id = ?";
 
-    private final static String UPDATE_PROJECT_STATUS = "update Portfolio set is_loaded = ? where project_id = ?";
-
-    //FIXME: Depreciated
     private final static String GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE = "select project_name from Portfolio where annotation_type = ?";
 
     public static String getQueue(){ return QUEUE; }
@@ -84,8 +81,6 @@ public class PortfolioDbQuery
     public static String updateIsNewParam() { return UPDATE_IS_NEW_PARAM; }
 
     public static String starProject() { return STAR_PROJECT; }
-
-    public static String updateProjectStatus() { return UPDATE_PROJECT_STATUS; }
 
     @Deprecated
     public static String getAllProjectsForAnnotationType() { return GET_ALL_PROJECTS_FOR_ANNOTATION_TYPE; }

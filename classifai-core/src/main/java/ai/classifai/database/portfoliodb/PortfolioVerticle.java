@@ -93,11 +93,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         {
             this.starProject(message);
         }
-        else if(action.equals(PortfolioDbQuery.updateProjectStatus()))
-        {
-            this.updateProjectStatus(message);
-        }
-        //FIXME: Depreciated - V1
         else if(action.equals(PortfolioDbQuery.getAllProjectsForAnnotationType()))
         {
             this.getAllProjectsForAnnotationType(message);
@@ -141,7 +136,6 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                                     .add(ParamConfig.getEmptyArray()) //uuid_list
                                     .add(true)                        //is_new
                                     .add(false)                       //is_starred
-                                    .add(false)                       //is_loaded
                                     .add(DateTime.get());             //created_date
 
             portfolioDbClient.queryWithParams(PortfolioDbQuery.createNewProject(), params, fetch -> {
@@ -296,48 +290,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
         });
     }
 
-    public void updateProjectStatus(Message<JsonObject> message)
-    {
-        Integer projectID = message.body().getInteger(ParamConfig.getProjectIDParam());
-        Object isLoadedObject = message.body().getString(ParamConfig.getStatusParam());
 
-        boolean isLoadedStatus;
-
-        try
-        {
-            if(isLoadedObject instanceof String)
-            {
-                String isLoadedStr = (String) isLoadedObject;
-
-                isLoadedStatus = ConversionHandler.String2boolean(isLoadedStr);
-            }
-            else
-            {
-                throw new Exception("Status != String. Could not convert to boolean for is_loaded.");
-            }
-        }
-        catch(Exception e)
-        {
-            message.reply(ReplyHandler.reportUserDefinedError("Starring object value is not boolean. Failed to execute"));
-            return;
-        }
-
-        portfolioDbClient.queryWithParams(PortfolioDbQuery.updateProjectStatus(), new JsonArray().add(isLoadedStatus).add(projectID), fetch ->{
-
-            if(fetch.succeeded())
-            {
-                message.reply(ReplyHandler.getOkReply());
-            }
-            else
-            {
-                message.reply(ReplyHandler.reportDatabaseQueryError(fetch.cause()));
-            }
-        });
-    }
-
-
-    //V1 API
-    @Deprecated
     public void getAllProjectsForAnnotationType(Message<JsonObject> message)
     {
         Integer annotationTypeIndex = message.body().getInteger(ParamConfig.getAnnotateTypeParam());
@@ -380,8 +333,8 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 Boolean isNew = row.getBoolean(2);
                 Boolean isStarred = row.getBoolean(3);
-                Boolean isLoaded = row.getBoolean(4);
-                String dataTime = row.getString(5);
+                Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoaded();
+                String dataTime = row.getString(4);
 
                 //project_name, uuid_list, is_new, is_starred, is_loaded, created_date
                 result.add(new JsonObject()
@@ -436,16 +389,10 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                         .map(json -> json.getBoolean(3))
                         .collect(Collectors.toList());
 
-                List<Boolean> isLoadedList = resultSet
-                        .getResults()
-                        .stream()
-                        .map(json -> json.getBoolean(4))
-                        .collect(Collectors.toList());
-
                 List<String> dateTimeList = resultSet
                         .getResults()
                         .stream()
-                        .map(json -> json.getString(5))
+                        .map(json -> json.getString(4))
                         .collect(Collectors.toList());
 
                 List<JsonObject> result = new ArrayList<>();
@@ -455,11 +402,14 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                 {
                     int total_uuid = ConversionHandler.string2IntegerList(uuidList.get(i)).size();
 
+                    Integer projectID = ProjectHandler.getProjectID(projectNameList.get(i), annotationTypeIndex);
+                    Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoaded();
+
                     result.add(new JsonObject()
                             .put(ParamConfig.getProjectNameParam(), projectNameList.get(i))
                             .put(ParamConfig.getIsNewParam(), isNewList.get(i))
                             .put(ParamConfig.getIsStarredParam(), isStarredList.get(i))
-                            .put(ParamConfig.getIsLoadedParam(), isLoadedList.get(i))
+                            .put(ParamConfig.getIsLoadedParam(), isLoaded)
                             .put(ParamConfig.getCreatedDateParam(), dateTimeList.get(i))
                             .put(ParamConfig.getTotalUUIDParam(), total_uuid));
                 }

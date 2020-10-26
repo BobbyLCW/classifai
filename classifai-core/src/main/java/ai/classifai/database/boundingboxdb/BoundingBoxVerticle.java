@@ -17,7 +17,6 @@ package ai.classifai.database.boundingboxdb;
 
 import ai.classifai.database.DatabaseConfig;
 import ai.classifai.database.loader.ProjectLoader;
-import ai.classifai.database.portfoliodb.PortfolioVerticle;
 import ai.classifai.server.ParamConfig;
 import ai.classifai.util.ConversionHandler;
 import ai.classifai.util.ProjectHandler;

@@ -78,6 +78,9 @@ public class ProjectLoader {
     private Integer currentUUIDMarker;
     private Integer totalUUIDMaxLen;
 
+    @Getter @Setter
+    private Boolean isLoaded;
+
     public ProjectLoader(@NonNull Integer currentProjectID, @NonNull String currentProjectName, @NonNull Integer currentAnnotationTypeInt, boolean currentIsNewProject, LoaderStatus currentLoaderStatus)
     {
         projectID = currentProjectID;
@@ -91,6 +94,8 @@ public class ProjectLoader {
         sanityUUIDList = new ArrayList<>();
 
         uuidGeneratorSeed = 0;
+
+        isLoaded = Boolean.FALSE;
 
         reset(FileSystemStatus.DID_NOT_INITIATE);
     }
@@ -114,6 +119,10 @@ public class ProjectLoader {
         {
             PortfolioVerticle.updateIsNewParam(projectID);
         }
+        else if(status.equals(LoaderStatus.LOADED))
+        {
+            isLoaded = Boolean.TRUE;
+        }
 
         loaderStatus = status;
     }
@@ -135,7 +144,7 @@ public class ProjectLoader {
 
         if(totalUUIDMaxLen == 0)
         {
-            loaderStatus = LoaderStatus.LOADED;
+            setLoaderStatus(LoaderStatus.LOADED);
         }
         else if(totalUUIDMaxLen < 0)
         {
@@ -154,7 +163,7 @@ public class ProjectLoader {
         {
             sanityUUIDList = new ArrayList<>(uuidUniqueSet);
 
-            loaderStatus = LoaderStatus.LOADED;
+            setLoaderStatus(LoaderStatus.LOADED);
         }
     }
 
