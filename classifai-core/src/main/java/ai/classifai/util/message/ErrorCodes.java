@@ -22,8 +22,9 @@ package ai.classifai.util.message;
  */
 public enum ErrorCodes
 {
-    NO_ACTION_SPECIFIED,
-    BAD_QUERY_PARAM,
     DB_ERROR,
+    USER_DEFINED_ERROR,
+    BAD_QUERY_PARAM,
+    NO_ACTION_SPECIFIED,
     OTHER_ERROR,
 }
