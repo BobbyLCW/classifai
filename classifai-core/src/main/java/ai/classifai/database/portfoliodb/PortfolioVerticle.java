@@ -333,7 +333,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
 
                 Boolean isNew = row.getBoolean(2);
                 Boolean isStarred = row.getBoolean(3);
-                Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoaded();
+                Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
                 String dataTime = row.getString(4);
 
                 //project_name, uuid_list, is_new, is_starred, is_loaded, created_date
@@ -403,7 +403,7 @@ public class PortfolioVerticle extends AbstractVerticle implements PortfolioServ
                     int total_uuid = ConversionHandler.string2IntegerList(uuidList.get(i)).size();
 
                     Integer projectID = ProjectHandler.getProjectID(projectNameList.get(i), annotationTypeIndex);
-                    Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoaded();
+                    Boolean isLoaded = ProjectHandler.getProjectLoader(projectID).getIsLoadedFrontEndToggle();
 
                     result.add(new JsonObject()
                             .put(ParamConfig.getProjectNameParam(), projectNameList.get(i))

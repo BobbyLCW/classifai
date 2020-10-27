@@ -283,6 +283,7 @@ public class ServerVerticle extends AbstractVerticle
         //Project exist, did not load in ProjectLoader, proceed with loading and checking validity of uuid from database
         if(loaderStatus.equals(LoaderStatus.DID_NOT_INITIATED))
         {
+            loader.setIsLoadedFrontEndToggle(Boolean.TRUE);
             loader.setLoaderStatus(LoaderStatus.LOADING);
 
             JsonObject jsonObject = new JsonObject().put(ParamConfig.getProjectIDParam(), loader.getProjectID());
@@ -335,6 +336,8 @@ public class ServerVerticle extends AbstractVerticle
         }
         else if(loaderStatus.equals(LoaderStatus.LOADED))
         {
+            loader.setIsLoadedFrontEndToggle(Boolean.TRUE);
+
             loader.setFileSystemStatus(FileSystemStatus.DID_NOT_INITIATE); //reset file system
             HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
         }
@@ -915,7 +918,7 @@ public class ServerVerticle extends AbstractVerticle
                 {
                     ProjectLoader loader = ProjectHandler.getProjectLoader(projectID);
 
-                    loader.setIsLoaded(false);
+                    loader.setIsLoadedFrontEndToggle(Boolean.FALSE);
 
                     HTTPResponseHandler.configureOK(context, ReplyHandler.getOkReply());
                 }

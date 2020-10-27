@@ -79,7 +79,7 @@ public class ProjectLoader {
     private Integer totalUUIDMaxLen;
 
     @Getter @Setter
-    private Boolean isLoaded;
+    private Boolean isLoadedFrontEndToggle;
 
     public ProjectLoader(@NonNull Integer currentProjectID, @NonNull String currentProjectName, @NonNull Integer currentAnnotationTypeInt, boolean currentIsNewProject, LoaderStatus currentLoaderStatus)
     {
@@ -95,7 +95,7 @@ public class ProjectLoader {
 
         uuidGeneratorSeed = 0;
 
-        isLoaded = Boolean.FALSE;
+        isLoadedFrontEndToggle = Boolean.FALSE;
 
         reset(FileSystemStatus.DID_NOT_INITIATE);
     }
@@ -119,10 +119,7 @@ public class ProjectLoader {
         {
             PortfolioVerticle.updateIsNewParam(projectID);
         }
-        else if(status.equals(LoaderStatus.LOADED))
-        {
-            isLoaded = Boolean.TRUE;
-        }
+
 
         loaderStatus = status;
     }
